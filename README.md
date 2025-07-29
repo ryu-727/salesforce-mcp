@@ -108,6 +108,22 @@ To use this MCP server with Claude for VS Code, create a `.vscode/mcp.json` file
 
 Replace `/path/to/salesforce-mcp` with the actual path to your project directory and update the environment variables with your Salesforce credentials.
 
+### Claude Code CLI Configuration
+
+To use this MCP server with Claude Code CLI, run the following command:
+
+```bash
+claude mcp add salesforce-mcp -s project \
+  -e SF_INSTANCE_URL=https://your-domain.my.salesforce.com \
+  -e SF_CLIENT_ID=your_connected_app_client_id \
+  -e SF_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
+your_private_key_content
+-----END RSA PRIVATE KEY-----" \
+  -e SF_SUBJECT=your_username@example.com \
+  -e SF_API_VERSION=59.0 \
+  -- /path/to/salesforce-mcp/build/index.js
+```
+
 ### Available Tools
 
 #### Apex Class Management
