@@ -1,0 +1,50 @@
+{
+  "name": "salesforce-mcp-server",
+  "version": "0.1.0",
+  "description": "MCP server for Salesforce Tooling API integration",
+  "type": "module",
+  "main": "build/index.js",
+  "bin": {
+    "salesforce-mcp-server": "build/index.js"
+  },
+  "scripts": {
+    "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
+    "dev": "tsx src/index.ts",
+    "dev:sandbox": "NODE_ENV=sandbox tsx src/index.ts",
+    "dev:production": "NODE_ENV=production tsx src/index.ts",
+    "start:sandbox": "NODE_ENV=sandbox node build/index.js",
+    "start:production": "NODE_ENV=production node build/index.js",
+    "prepare": "npm run build",
+    "watch": "tsc --watch",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write src/**/*.ts"
+  },
+  "keywords": [
+    "mcp",
+    "salesforce",
+    "tooling-api",
+    "claude"
+  ],
+  "author": "ryu-727",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.6.0",
+    "axios": "^1.6.7",
+    "dotenv": "^17.2.1",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "@typescript-eslint/eslint-plugin": "^6.21.0",
+    "@typescript-eslint/parser": "^6.21.0",
+    "eslint": "^8.56.0",
+    "jest": "^29.7.0",
+    "prettier": "^3.2.5",
+    "tsx": "^4.7.1",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
