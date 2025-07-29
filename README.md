@@ -84,6 +84,30 @@ npm run dev
 ./build/index.js
 ```
 
+### VS Code Configuration
+
+To use this MCP server with Claude for VS Code, create a `.vscode/mcp.json` file in your workspace:
+
+```json
+{
+  "mcpServers": {
+    "salesforce": {
+      "command": "node",
+      "args": ["/path/to/salesforce-mcp/build/index.js"],
+      "env": {
+        "SF_INSTANCE_URL": "https://your-domain.my.salesforce.com",
+        "SF_CLIENT_ID": "your_connected_app_client_id",
+        "SF_PRIVATE_KEY": "-----BEGIN RSA PRIVATE KEY-----\nyour_private_key_content\n-----END RSA PRIVATE KEY-----",
+        "SF_SUBJECT": "your_username@example.com",
+        "SF_API_VERSION": "59.0"
+      }
+    }
+  }
+}
+```
+
+Replace `/path/to/salesforce-mcp` with the actual path to your project directory and update the environment variables with your Salesforce credentials.
+
 ### Available Tools
 
 #### Apex Class Management
