@@ -8,6 +8,7 @@ export interface SalesforceConfig {
   privateKey?: string;
   subject?: string;
   apiVersion: string;
+  targetOrg?: string; // SF CLI組織名（alias）またはusername
 }
 
 export interface SalesforceTokenResponse {
@@ -17,6 +18,30 @@ export interface SalesforceTokenResponse {
   token_type: string;
   issued_at: string;
   signature: string;
+}
+
+export interface SfOrgInfo {
+  accessToken: string;
+  instanceUrl: string;
+  orgId: string;
+  username: string;
+  loginUrl: string;
+  clientId: string;
+  alias?: string;
+  isDefaultUsername?: boolean;
+  connectedStatus: string;
+  instanceApiVersion: string;
+}
+
+export interface SfOrgListResponse {
+  status: number;
+  result: {
+    nonScratchOrgs: SfOrgInfo[];
+    devHubs: SfOrgInfo[];
+    scratchOrgs: SfOrgInfo[];
+    sandboxes: SfOrgInfo[];
+    other: SfOrgInfo[];
+  };
 }
 
 export interface ToolingApiResponse<T = any> {
