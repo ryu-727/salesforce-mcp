@@ -50,6 +50,28 @@ npm run build
 
 Configure your Salesforce connection using environment variables:
 
+### SF CLI Authentication (Recommended)
+
+If you have the Salesforce CLI installed and authenticated, the MCP server can automatically use your existing authentication:
+
+```bash
+# Use default authenticated org
+npm run dev
+
+# Specify a particular org by alias
+export SF_TARGET_ORG="myorg"
+npm run dev
+
+# Or specify by username
+export SF_TARGET_ORG="user@example.com"
+npm run dev
+```
+
+**Prerequisites:**
+- Install Salesforce CLI: https://developer.salesforce.com/tools/cli
+- Authenticate to your org: `sf org login web`
+- Verify authentication: `sf org list`
+
 ### JWT Bearer Token Flow (Recommended for CI/CD)
 ```bash
 export SF_INSTANCE_URL="https://your-domain.my.salesforce.com"
@@ -88,6 +110,22 @@ npm run dev
 
 To use this MCP server with Claude for VS Code, create a `.vscode/mcp.json` file in your workspace:
 
+**Option 1: Using SF CLI Authentication (Recommended)**
+```json
+{
+  "mcpServers": {
+    "salesforce": {
+      "command": "node",
+      "args": ["/path/to/salesforce-mcp/build/index.js"],
+      "env": {
+        "SF_TARGET_ORG": "myorg"
+      }
+    }
+  }
+}
+```
+
+**Option 2: Using JWT Authentication**
 ```json
 {
   "mcpServers": {
@@ -106,12 +144,18 @@ To use this MCP server with Claude for VS Code, create a `.vscode/mcp.json` file
 }
 ```
 
-Replace `/path/to/salesforce-mcp` with the actual path to your project directory and update the environment variables with your Salesforce credentials.
+Replace `/path/to/salesforce-mcp` with the actual path to your project directory.
 
 ### Claude Code CLI Configuration
 
-To use this MCP server with Claude Code CLI, run the following command:
+**Option 1: Using SF CLI Authentication (Recommended)**
+```bash
+claude mcp add salesforce-mcp -s project \
+  -e SF_TARGET_ORG=myorg \
+  -- /path/to/salesforce-mcp/build/index.js
+```
 
+**Option 2: Using JWT Authentication**
 ```bash
 claude mcp add salesforce-mcp -s project \
   -e SF_INSTANCE_URL=https://your-domain.my.salesforce.com \

@@ -1,6 +1,7 @@
 import axios from 'axios';
 import crypto from 'crypto';
-import { SalesforceConfig, SalesforceTokenResponse } from '../types/index.js';
+import { execSync } from 'child_process';
+import { SalesforceConfig, SalesforceTokenResponse, SfOrgListResponse, SfOrgInfo } from '../types/index.js';
 
 export class SalesforceAuth {
   private config: SalesforceConfig;
@@ -17,12 +18,23 @@ export class SalesforceAuth {
       return this.accessToken;
     }
 
+    // Try SF CLI authentication first
+    try {
+      await this.authenticateWithSfCli();
+      if (this.accessToken) {
+        return this.accessToken;
+      }
+    } catch (error) {
+      // SF CLI authentication failed, try other methods
+    }
+
+    // Fallback to existing authentication methods
     if (this.config.privateKey && this.config.subject) {
       await this.authenticateWithJWT();
     } else if (this.config.username && this.config.password) {
       await this.authenticateWithUsernamePassword();
     } else {
-      throw new Error('Invalid authentication configuration. Provide either JWT (privateKey, subject) or username/password credentials.');
+      throw new Error('Invalid authentication configuration. Provide either SF CLI authentication, JWT (privateKey, subject) or username/password credentials.');
     }
 
     if (!this.accessToken) {
@@ -129,5 +141,73 @@ export class SalesforceAuth {
       .sign(privateKey, 'base64url');
 
     return `${signatureInput}.${signature}`;
+  }
+
+  private async authenticateWithSfCli(): Promise<void> {
+    try {
+      // Get SF CLI org list
+      const orgListOutput = execSync('sf org list --json', { encoding: 'utf-8' });
+      const orgList: SfOrgListResponse = JSON.parse(orgListOutput);
+
+      if (orgList.status !== 0) {
+        throw new Error('Failed to get org list from SF CLI');
+      }
+
+      // Combine all org types for searching
+      const allOrgs: SfOrgInfo[] = [
+        ...orgList.result.nonScratchOrgs,
+        ...orgList.result.devHubs,
+        ...orgList.result.scratchOrgs,
+        ...orgList.result.sandboxes,
+        ...orgList.result.other
+      ];
+
+      if (allOrgs.length === 0) {
+        throw new Error('No authenticated orgs found in SF CLI');
+      }
+
+      let targetOrg: SfOrgInfo | undefined;
+
+      if (this.config.targetOrg) {
+        // Find org by alias or username
+        targetOrg = allOrgs.find(org => 
+          org.alias === this.config.targetOrg || 
+          org.username === this.config.targetOrg
+        );
+
+        if (!targetOrg) {
+          throw new Error(`Org with alias or username '${this.config.targetOrg}' not found in SF CLI`);
+        }
+      } else {
+        // Use default org
+        targetOrg = allOrgs.find(org => org.isDefaultUsername === true);
+        
+        if (!targetOrg) {
+          // If no default, use first connected org
+          targetOrg = allOrgs.find(org => org.connectedStatus === 'Connected');
+        }
+
+        if (!targetOrg) {
+          throw new Error('No default or connected org found in SF CLI');
+        }
+      }
+
+      // Check if org is connected
+      if (targetOrg.connectedStatus !== 'Connected') {
+        throw new Error(`Org '${targetOrg.alias || targetOrg.username}' is not connected: ${targetOrg.connectedStatus}`);
+      }
+
+      // Use the access token from SF CLI
+      this.accessToken = targetOrg.accessToken;
+      this.instanceUrl = targetOrg.instanceUrl;
+      // SF CLI tokens typically expire after a certain time, set reasonable expiry
+      this.tokenExpiresAt = Date.now() + (3600 * 1000); // 1 hour
+
+    } catch (error: any) {
+      if (error.code === 'ENOENT') {
+        throw new Error('SF CLI is not installed or not available in PATH');
+      }
+      throw error;
+    }
   }
 }

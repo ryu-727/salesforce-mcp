@@ -28,7 +28,8 @@ const DEFAULT_CONFIG: SalesforceConfig = {
   securityToken: process.env.SF_SECURITY_TOKEN,
   privateKey: process.env.SF_PRIVATE_KEY,
   subject: process.env.SF_SUBJECT,
-  apiVersion: process.env.SF_API_VERSION || '59.0'
+  apiVersion: process.env.SF_API_VERSION || '59.0',
+  targetOrg: process.env.SF_TARGET_ORG
 };
 
 class SalesforceMCPServer {
