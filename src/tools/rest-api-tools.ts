@@ -205,6 +205,143 @@ export function createRestApiTools(client: SalesforceRestClient) {
           };
         }
       }
+    },
+    {
+      name: 'search_async_apex_jobs',
+      description: 'Search AsyncApexJob records using REST API (internally uses Tooling API)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          status: {
+            type: 'string',
+            description: 'Job status filter (e.g., "Completed", "Processing", "Queued", "Failed")'
+          },
+          jobType: {
+            type: 'string',
+            description: 'Job type filter (e.g., "BatchApex", "Future", "Queueable")'
+          },
+          apexClassName: {
+            type: 'string',
+            description: 'Filter by Apex class name (partial match supported)'
+          },
+          createdDateFrom: {
+            type: 'string',
+            description: 'Filter jobs created after this date (ISO format, e.g., "2023-01-01T00:00:00Z")'
+          },
+          createdDateTo: {
+            type: 'string',
+            description: 'Filter jobs created before this date (ISO format, e.g., "2023-12-31T23:59:59Z")'
+          },
+          limit: {
+            type: 'number',
+            description: 'Maximum number of records to return',
+            default: 100,
+            minimum: 1,
+            maximum: 2000
+          }
+        },
+        additionalProperties: false
+      },
+      handler: async (args: any) => {
+        const schema = z.object({
+          status: z.string().optional(),
+          jobType: z.string().optional(),
+          apexClassName: z.string().optional(),
+          createdDateFrom: z.string().optional(),
+          createdDateTo: z.string().optional(),
+          limit: z.number().min(1).max(2000).default(100)
+        });
+        
+        try {
+          const parsedArgs = schema.parse(args);
+          
+          const result = await client.searchAsyncApexJobs(parsedArgs);
+          
+          return {
+            content: [{
+              type: 'text',
+              text: `AsyncApexJob Search Results (${result.length} records found):\n\n${JSON.stringify(result, null, 2)}`
+            }]
+          };
+        } catch (error: any) {
+          let errorMessage = 'Unknown error';
+          if (error instanceof Error) {
+            errorMessage = error.message;
+          }
+          if (error.response?.data) {
+            errorMessage += `\nResponse: ${JSON.stringify(error.response.data, null, 2)}`;
+          }
+          
+          return {
+            content: [{
+              type: 'text',
+              text: `Error searching AsyncApexJob records: ${errorMessage}`
+            }],
+            isError: true
+          };
+        }
+      }
+    },
+    {
+      name: 'get_async_apex_job',
+      description: 'Get a specific AsyncApexJob record by ID using REST API (internally uses Tooling API)',
+      inputSchema: {
+        type: 'object',
+        properties: {
+          jobId: {
+            type: 'string',
+            description: 'The AsyncApexJob ID',
+            minLength: 15,
+            maxLength: 18
+          }
+        },
+        required: ['jobId'],
+        additionalProperties: false
+      },
+      handler: async (args: any) => {
+        const schema = z.object({
+          jobId: z.string().min(15).max(18)
+        });
+        
+        try {
+          const parsedArgs = schema.parse(args);
+          
+          const result = await client.getAsyncApexJob(parsedArgs.jobId);
+          
+          if (!result) {
+            return {
+              content: [{
+                type: 'text',
+                text: `AsyncApexJob with ID '${parsedArgs.jobId}' not found`
+              }],
+              isError: true
+            };
+          }
+          
+          return {
+            content: [{
+              type: 'text',
+              text: `AsyncApexJob Details:\n\n${JSON.stringify(result, null, 2)}`
+            }]
+          };
+        } catch (error: any) {
+          let errorMessage = 'Unknown error';
+          if (error instanceof Error) {
+            errorMessage = error.message;
+          }
+          if (error.response?.data) {
+            errorMessage += `\nResponse: ${JSON.stringify(error.response.data, null, 2)}`;
+          }
+          
+          return {
+            content: [{
+              type: 'text',
+              text: `Error getting AsyncApexJob: ${errorMessage}`
+            }],
+            isError: true
+          };
+        }
+      }
     }
   ];
 }

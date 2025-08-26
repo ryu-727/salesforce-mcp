@@ -170,6 +170,14 @@ your_private_key_content
 
 ### Available Tools
 
+#### REST API Tools
+- `search_async_apex_jobs` - Search AsyncApexJob records with filtering by status, job type, Apex class name, date range
+- `get_async_apex_job` - Get detailed information about a specific AsyncApexJob by ID
+- `call_rest_api` - Make generic REST API calls to Salesforce
+- `get_org_limits` - Get organization limits information
+- `get_sobjects_list` - Get list of all available SObjects
+- `describe_sobject` - Describe a specific SObject schema
+
 #### Apex Class Management
 - `list_apex_classes` - List all Apex classes with optional filtering
 - `get_apex_class` - Get detailed information about a specific Apex class
@@ -216,6 +224,9 @@ your_private_key_content
 
 Once the MCP server is running and connected to Claude, you can use natural language commands like:
 
+- "Search for completed AsyncApexJob records for BatchProcessor class"
+- "Get details of AsyncApexJob with ID 707XXXXXXXXXXXXXXX"
+- "Find all failed batch jobs from the last week"
 - "List all Apex classes that contain 'Account' in their name"
 - "Show me the code coverage for all classes below 75%"
 - "Get the symbol table for the AccountTriggerHandler class"
