@@ -15,10 +15,53 @@ export function createRestApiTools(client: SalesforceRestClient) {
         try {
           const result = await client.getLimits();
           
+          // Process limits to show usage percentages and warnings
+          const processedLimits = Object.entries(result).map(([key, value]: [string, any]) => {
+            if (typeof value === 'object' && value.Max !== undefined && value.Remaining !== undefined) {
+              const used = value.Max - value.Remaining;
+              const usagePercent = ((used / value.Max) * 100).toFixed(1);
+              const status = parseFloat(usagePercent) > 80 ? '⚠️' : parseFloat(usagePercent) > 50 ? '⚡' : '✅';
+              
+              return {
+                name: key,
+                max: value.Max,
+                used: used,
+                remaining: value.Remaining,
+                usagePercent: `${usagePercent}%`,
+                status: status
+              };
+            }
+            return { name: key, value: value };
+          });
+
+          // Separate high usage items for summary
+          const highUsageItems = processedLimits.filter((item: any) => 
+            item.usagePercent && parseFloat(item.usagePercent) > 50
+          );
+
+          let summaryText = `Organization Limits Summary:\n\n`;
+          
+          if (highUsageItems.length > 0) {
+            summaryText += `⚠️  High Usage Items:\n`;
+            highUsageItems.forEach((item: any) => {
+              summaryText += `  ${item.status} ${item.name}: ${item.used}/${item.max} (${item.usagePercent})\n`;
+            });
+            summaryText += `\n`;
+          }
+
+          summaryText += `📊 All Limits:\n\n`;
+          processedLimits.forEach((item: any) => {
+            if (item.usagePercent) {
+              summaryText += `${item.status} ${item.name}: ${item.used}/${item.max} (${item.usagePercent}) - ${item.remaining} remaining\n`;
+            } else {
+              summaryText += `📋 ${item.name}: ${JSON.stringify(item.value)}\n`;
+            }
+          });
+          
           return {
             content: [{
               type: 'text',
-              text: `Organization Limits:\n\n${JSON.stringify(result, null, 2)}`
+              text: summaryText
             }]
           };
         } catch (error) {
