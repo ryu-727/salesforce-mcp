@@ -10,6 +10,8 @@ build/
 dist/
 lib/
 *.tsbuildinfo
+.npmignore
+.mcp.json
 
 # Runtime data
 pids
