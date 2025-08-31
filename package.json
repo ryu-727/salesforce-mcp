@@ -1,11 +1,14 @@
 {
   "name": "salesforce-mcp-server",
-  "version": "0.1.0",
+  "version": "0.1.6",
   "description": "MCP server for Salesforce Tooling API integration",
   "type": "module",
-  "main": "build/index.js",
+  "main": "./build/index.js",
+  "files": [
+    "build"
+  ],
   "bin": {
-    "salesforce-mcp-server": "build/index.js"
+    "salesforce-mcp-server": "./build/index.js"
   },
   "scripts": {
     "build": "tsc && node -e \"require('fs').chmodSync('build/index.js', '755')\"",
@@ -18,7 +21,8 @@
     "watch": "tsc --watch",
     "test": "jest",
     "lint": "eslint src/**/*.ts",
-    "format": "prettier --write src/**/*.ts"
+    "format": "prettier --write src/**/*.ts",
+    "postinstall": "chmod +x ./build/index.js"
   },
   "keywords": [
     "mcp",
