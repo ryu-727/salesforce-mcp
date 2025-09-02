@@ -394,7 +394,7 @@ describe('SalesforceRestClient', () => {
       const result = await client.searchAsyncApexJobs(searchParams);
 
       expect(mockToolingClient.query).toHaveBeenCalledWith(
-        "SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name, ApexClass.Name FROM AsyncApexJob WHERE 1=1 AND Status = 'Completed' AND JobType = 'BatchApex' AND ApexClass.Name LIKE '%TestBatch%' AND CreatedDate >= 2023-01-01T00:00:00Z AND CreatedDate <= 2023-12-31T23:59:59Z ORDER BY CreatedDate DESC LIMIT 50"
+        "SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name, ApexClass.Name FROM AsyncApexJob WHERE Id != NULL AND Status = 'Completed' AND JobType = 'BatchApex' AND ApexClass.Name LIKE '%TestBatch%' AND CreatedDate >= 2023-01-01T00:00:00Z AND CreatedDate <= 2023-12-31T23:59:59Z ORDER BY CreatedDate DESC LIMIT 50"
       );
       expect(result).toEqual(mockResponse.records);
     });
@@ -406,7 +406,7 @@ describe('SalesforceRestClient', () => {
       const result = await client.searchAsyncApexJobs({});
 
       expect(mockToolingClient.query).toHaveBeenCalledWith(
-        'SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name, ApexClass.Name FROM AsyncApexJob WHERE 1=1 ORDER BY CreatedDate DESC LIMIT 100'
+        'SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name, ApexClass.Name FROM AsyncApexJob WHERE Id != NULL ORDER BY CreatedDate DESC LIMIT 100'
       );
       expect(result).toEqual(mockResponse.records);
     });

@@ -157,7 +157,7 @@ export class SalesforceRestClient {
     createdDateTo?: string;
     limit?: number;
   }): Promise<any[]> {
-    let soql = 'SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name, ApexClass.Name FROM AsyncApexJob WHERE 1=1';
+    let soql = 'SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name, ApexClass.Name FROM AsyncApexJob WHERE Id != NULL';
     
     if (searchParams.status) {
       soql += ` AND Status = '${searchParams.status}'`;
