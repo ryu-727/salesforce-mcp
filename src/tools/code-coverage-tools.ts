@@ -18,7 +18,7 @@ export function createCodeCoverageTools(client: SalesforceToolingClient) {
               type: 'text',
               text: `Code Coverage (${filtered.length} items):\n\n${filtered.map(c => {
                 const percentage = ((c.NumLinesCovered / (c.NumLinesCovered + c.NumLinesUncovered)) * 100).toFixed(1);
-                return `• ${c.ApexClassOrTriggerName}: ${percentage}% (${c.NumLinesCovered}/${c.NumLinesCovered + c.NumLinesUncovered})`;
+                return `• ${c.ApexClassOrTrigger.Name}: ${percentage}% (${c.NumLinesCovered}/${c.NumLinesCovered + c.NumLinesUncovered})`;
               }).join('\n')}`
             }]
           };

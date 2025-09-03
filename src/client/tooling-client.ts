@@ -31,7 +31,6 @@ export class SalesforceToolingClient {
   private setupInterceptors(): void {
     this.httpClient.interceptors.request.use(async (config) => {
       const token = await this.auth.getAccessToken();
-      console.log(token);
       const instanceUrl = this.auth.getInstanceUrl();
 
       config.headers.Authorization = `Bearer ${token}`;
@@ -235,8 +234,21 @@ export class SalesforceToolingClient {
       soql += ` WHERE ApexClassOrTriggerId = '${apexClassOrTriggerId}'`;
     }
 
-    const result = await this.query<CodeCoverage>(soql);
-    return result.records;
+    console.log('Debug - getCodeCoverage SOQL:', soql);
+    
+    try {
+      const result = await this.query<CodeCoverage>(soql);
+      console.log('Debug - getCodeCoverage result:', JSON.stringify(result, null, 2));
+      return result.records;
+    } catch (error: any) {
+      console.error('Debug - getCodeCoverage error:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        message: error.message
+      });
+      throw error;
+    }
   }
 
   // Symbol Table methods

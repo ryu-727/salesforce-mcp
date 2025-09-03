@@ -95,7 +95,7 @@ export interface ApexPage {
 
 export interface CodeCoverage {
   ApexClassOrTriggerId: string;
-  ApexClassOrTriggerName: string;
+  ApexClassOrTrigger: { Name: string };
   NumLinesCovered: number;
   NumLinesUncovered: number;
   Coverage: {
