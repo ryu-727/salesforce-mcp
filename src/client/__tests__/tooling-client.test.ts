@@ -349,7 +349,7 @@ describe('SalesforceToolingClient', () => {
 
       expect(mockHttpClient.get).toHaveBeenCalledWith('query/', {
         params: { 
-          q: "SELECT ApexClassOrTriggerId, ApexClassOrTriggerName, NumLinesCovered, NumLinesUncovered, Coverage FROM ApexCodeCoverageAggregate WHERE ApexClassOrTriggerId = '123'"
+          q: "SELECT ApexClassOrTriggerId, ApexClassOrTrigger.Name, NumLinesCovered, NumLinesUncovered, Coverage FROM ApexCodeCoverageAggregate WHERE ApexClassOrTriggerId = '123'"
         }
       });
       expect(result).toEqual(mockResponse.data.records);
