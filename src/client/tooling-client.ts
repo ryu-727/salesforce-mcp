@@ -229,7 +229,7 @@ export class SalesforceToolingClient {
     apexClassOrTriggerId?: string
   ): Promise<CodeCoverage[]> {
     let soql =
-      'SELECT ApexClassOrTriggerId, ApexClassOrTriggerName, NumLinesCovered, NumLinesUncovered, Coverage FROM ApexCodeCoverageAggregate';
+      'SELECT ApexClassOrTriggerId, ApexClassOrTrigger.Name, NumLinesCovered, NumLinesUncovered, Coverage FROM ApexCodeCoverageAggregate';
 
     if (apexClassOrTriggerId) {
       soql += ` WHERE ApexClassOrTriggerId = '${apexClassOrTriggerId}'`;
