@@ -13,6 +13,11 @@ export class SalesforceAuth {
     this.config = config;
   }
 
+  // Static method to create a shared instance
+  static createShared(config: SalesforceConfig): SalesforceAuth {
+    return new SalesforceAuth(config);
+  }
+
   async getAccessToken(): Promise<string> {
     if (this.accessToken && this.tokenExpiresAt && Date.now() < this.tokenExpiresAt) {
       return this.accessToken;

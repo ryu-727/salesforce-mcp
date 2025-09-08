@@ -5,6 +5,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { SalesforceToolingClient } from './client/tooling-client.js';
 import { SalesforceRestClient } from './client/rest-client.js';
+import { SalesforceAuth } from './auth/salesforce-auth.js';
 import { SalesforceConfig } from './types/index.js';
 import { createApexClassTools } from './tools/apex-class-tools.js';
 import { createApexTriggerTools } from './tools/apex-trigger-tools.js';
@@ -51,8 +52,11 @@ class SalesforceMCPServer {
       }
     );
 
-    this.toolingClient = new SalesforceToolingClient(DEFAULT_CONFIG);
-    this.restClient = new SalesforceRestClient(DEFAULT_CONFIG);
+    // Create shared authentication instance
+    const sharedAuth = SalesforceAuth.createShared(DEFAULT_CONFIG);
+    
+    this.toolingClient = new SalesforceToolingClient(DEFAULT_CONFIG, sharedAuth);
+    this.restClient = new SalesforceRestClient(DEFAULT_CONFIG, sharedAuth);
     this.registerAllTools();
     this.setupHandlers();
   }

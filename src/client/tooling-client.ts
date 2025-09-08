@@ -14,8 +14,8 @@ export class SalesforceToolingClient {
   private auth: SalesforceAuth;
   private httpClient: AxiosInstance;
 
-  constructor(config: SalesforceConfig) {
-    this.auth = new SalesforceAuth(config);
+  constructor(config: SalesforceConfig, sharedAuth?: SalesforceAuth) {
+    this.auth = sharedAuth || new SalesforceAuth(config);
 
     this.httpClient = axios.create({
       timeout: 30000,
@@ -313,5 +313,62 @@ export class SalesforceToolingClient {
     );
     
     return response.data.records[0];
+  }
+
+  // AsyncApexJob methods
+  async getAsyncApexJobs(statusFilter?: string, limit: number = 100): Promise<any[]> {
+    let soql = 'SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name FROM AsyncApexJob';
+    
+    if (statusFilter) {
+      soql += ` WHERE Status = '${statusFilter}'`;
+    }
+    
+    soql += ` ORDER BY CreatedDate DESC LIMIT ${limit}`;
+    
+    const result = await this.query(soql);
+    return result.records;
+  }
+
+  async getAsyncApexJob(jobId: string): Promise<any> {
+    const soql = `SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name, ExtendedStatus FROM AsyncApexJob WHERE Id = '${jobId}'`;
+    
+    const result = await this.query(soql);
+    return result.records[0];
+  }
+
+  async searchAsyncApexJobs(searchParams: {
+    status?: string;
+    jobType?: string;
+    apexClassName?: string;
+    createdDateFrom?: string;
+    createdDateTo?: string;
+    limit?: number;
+  }): Promise<any[]> {
+    let soql = 'SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name, ApexClass.Name FROM AsyncApexJob WHERE Id != NULL';
+    
+    if (searchParams.status) {
+      soql += ` AND Status = '${searchParams.status}'`;
+    }
+    
+    if (searchParams.jobType) {
+      soql += ` AND JobType = '${searchParams.jobType}'`;
+    }
+    
+    if (searchParams.apexClassName) {
+      soql += ` AND ApexClass.Name LIKE '%${searchParams.apexClassName}%'`;
+    }
+    
+    if (searchParams.createdDateFrom) {
+      soql += ` AND CreatedDate >= ${searchParams.createdDateFrom}`;
+    }
+    
+    if (searchParams.createdDateTo) {
+      soql += ` AND CreatedDate <= ${searchParams.createdDateTo}`;
+    }
+    
+    soql += ` ORDER BY CreatedDate DESC LIMIT ${searchParams.limit || 100}`;
+    
+    const result = await this.query(soql);
+    return result.records;
   }
 }

@@ -1,16 +1,13 @@
 import axios, { AxiosInstance } from 'axios';
 import { SalesforceAuth } from '../auth/salesforce-auth.js';
 import { SalesforceConfig } from '../types/index.js';
-import { SalesforceToolingClient } from './tooling-client.js';
 
 export class SalesforceRestClient {
   private auth: SalesforceAuth;
   private httpClient: AxiosInstance;
-  private toolingClient: SalesforceToolingClient;
 
-  constructor(config: SalesforceConfig) {
-    this.auth = new SalesforceAuth(config);
-    this.toolingClient = new SalesforceToolingClient(config);
+  constructor(config: SalesforceConfig, sharedAuth?: SalesforceAuth) {
+    this.auth = sharedAuth || new SalesforceAuth(config);
 
     this.httpClient = axios.create({
       timeout: 30000,
@@ -87,22 +84,8 @@ export class SalesforceRestClient {
   }
 
   async query(soql: string): Promise<any> {
-    // Check if query contains Tooling API objects and route accordingly
-    const toolingObjects = [
-      'AsyncApexJob', 'ApexClass', 'ApexTrigger', 'ApexPage', 'ApexLog', 
-      'ApexCodeCoverage', 'ApexCodeCoverageAggregate', 'SymbolTable'
-    ];
-    
-    const containsToolingObject = toolingObjects.some(obj => 
-      soql.toLowerCase().includes(obj.toLowerCase())
-    );
-    
-    if (containsToolingObject) {
-      // Route to Tooling API
-      return this.toolingClient.query(soql);
-    }
-    
-    // Use standard REST API
+    // Use standard REST API for all queries
+    // Note: Tooling API objects should be queried via SalesforceToolingClient
     return this.callApi('query', 'GET', null, { q: soql });
   }
 
@@ -126,63 +109,6 @@ export class SalesforceRestClient {
 
   async deleteRecord(sobjectType: string, id: string): Promise<void> {
     await this.callApi(`sobjects/${sobjectType}/${id}`, 'DELETE');
-  }
-
-  // AsyncApexJob methods (proxied to Tooling API)
-  async getAsyncApexJobs(statusFilter?: string, limit: number = 100): Promise<any[]> {
-    let soql = 'SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name FROM AsyncApexJob';
-    
-    if (statusFilter) {
-      soql += ` WHERE Status = '${statusFilter}'`;
-    }
-    
-    soql += ` ORDER BY CreatedDate DESC LIMIT ${limit}`;
-    
-    const result = await this.toolingClient.query(soql);
-    return result.records;
-  }
-
-  async getAsyncApexJob(jobId: string): Promise<any> {
-    const soql = `SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name, ExtendedStatus FROM AsyncApexJob WHERE Id = '${jobId}'`;
-    
-    const result = await this.toolingClient.query(soql);
-    return result.records[0];
-  }
-
-  async searchAsyncApexJobs(searchParams: {
-    status?: string;
-    jobType?: string;
-    apexClassName?: string;
-    createdDateFrom?: string;
-    createdDateTo?: string;
-    limit?: number;
-  }): Promise<any[]> {
-    let soql = 'SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name, ApexClass.Name FROM AsyncApexJob WHERE Id != NULL';
-    
-    if (searchParams.status) {
-      soql += ` AND Status = '${searchParams.status}'`;
-    }
-    
-    if (searchParams.jobType) {
-      soql += ` AND JobType = '${searchParams.jobType}'`;
-    }
-    
-    if (searchParams.apexClassName) {
-      soql += ` AND ApexClass.Name LIKE '%${searchParams.apexClassName}%'`;
-    }
-    
-    if (searchParams.createdDateFrom) {
-      soql += ` AND CreatedDate >= ${searchParams.createdDateFrom}`;
-    }
-    
-    if (searchParams.createdDateTo) {
-      soql += ` AND CreatedDate <= ${searchParams.createdDateTo}`;
-    }
-    
-    soql += ` ORDER BY CreatedDate DESC LIMIT ${searchParams.limit || 100}`;
-    
-    const result = await this.toolingClient.query(soql);
-    return result.records;
   }
 
   // Get authentication info for direct use
