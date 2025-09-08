@@ -61,6 +61,14 @@ describe('SalesforceToolingClient', () => {
       });
     });
 
+    it('should create a SalesforceToolingClient instance with shared auth', () => {
+      const sharedAuth = new SalesforceAuth(config);
+      const clientWithSharedAuth = new SalesforceToolingClient(config, sharedAuth);
+      
+      expect(clientWithSharedAuth).toBeInstanceOf(SalesforceToolingClient);
+      // Should not create a new auth instance when sharedAuth is provided
+    });
+
     it('should setup interceptors', () => {
       expect(mockHttpClient.interceptors.request.use).toHaveBeenCalled();
       expect(mockHttpClient.interceptors.response.use).toHaveBeenCalled();
@@ -451,6 +459,116 @@ describe('SalesforceToolingClient', () => {
         }
       );
       expect(result).toEqual(mockResponse.data.records[0]);
+    });
+  });
+
+  describe('getAsyncApexJobs', () => {
+    it('should get all async apex jobs', async () => {
+      const mockResponse = {
+        data: {
+          records: [{ Id: 'job123', Status: 'Completed' }]
+        }
+      };
+
+      mockHttpClient.get.mockResolvedValue(mockResponse);
+
+      const result = await client.getAsyncApexJobs();
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith('query/', {
+        params: { 
+          q: 'SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name FROM AsyncApexJob ORDER BY CreatedDate DESC LIMIT 100'
+        }
+      });
+      expect(result).toEqual(mockResponse.data.records);
+    });
+
+    it('should get async apex jobs with status filter', async () => {
+      const mockResponse = {
+        data: {
+          records: [{ Id: 'job123', Status: 'Completed' }]
+        }
+      };
+
+      mockHttpClient.get.mockResolvedValue(mockResponse);
+
+      const result = await client.getAsyncApexJobs('Completed', 50);
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith('query/', {
+        params: { 
+          q: "SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name FROM AsyncApexJob WHERE Status = 'Completed' ORDER BY CreatedDate DESC LIMIT 50"
+        }
+      });
+      expect(result).toEqual(mockResponse.data.records);
+    });
+  });
+
+  describe('getAsyncApexJob', () => {
+    it('should get a specific async apex job', async () => {
+      const mockResponse = {
+        data: {
+          records: [{ Id: 'job123', Status: 'Completed', ExtendedStatus: null }]
+        }
+      };
+
+      mockHttpClient.get.mockResolvedValue(mockResponse);
+
+      const result = await client.getAsyncApexJob('job123');
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith('query/', {
+        params: { 
+          q: "SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name, ExtendedStatus FROM AsyncApexJob WHERE Id = 'job123'"
+        }
+      });
+      expect(result).toEqual(mockResponse.data.records[0]);
+    });
+  });
+
+  describe('searchAsyncApexJobs', () => {
+    it('should search async apex jobs with all filters', async () => {
+      const mockResponse = {
+        data: {
+          records: [{ Id: 'job123', Status: 'Completed', JobType: 'BatchApex' }]
+        }
+      };
+
+      mockHttpClient.get.mockResolvedValue(mockResponse);
+
+      const searchParams = {
+        status: 'Completed',
+        jobType: 'BatchApex',
+        apexClassName: 'TestBatch',
+        createdDateFrom: '2023-01-01T00:00:00Z',
+        createdDateTo: '2023-12-31T23:59:59Z',
+        limit: 50
+      };
+
+      const result = await client.searchAsyncApexJobs(searchParams);
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith('query/', {
+        params: { 
+          q: "SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name, ApexClass.Name FROM AsyncApexJob WHERE Id != NULL AND Status = 'Completed' AND JobType = 'BatchApex' AND ApexClass.Name LIKE '%TestBatch%' AND CreatedDate >= 2023-01-01T00:00:00Z AND CreatedDate <= 2023-12-31T23:59:59Z ORDER BY CreatedDate DESC LIMIT 50"
+        }
+      });
+      expect(result).toEqual(mockResponse.data.records);
+    });
+
+    it('should search async apex jobs without filters', async () => {
+      const mockResponse = {
+        data: {
+          records: [{ Id: 'job123', Status: 'Completed' }]
+        }
+      };
+
+      mockHttpClient.get.mockResolvedValue(mockResponse);
+
+      const result = await client.searchAsyncApexJobs({});
+
+      expect(mockHttpClient.get).toHaveBeenCalledWith('query/', {
+        params: { 
+          q: 'SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name, ApexClass.Name FROM AsyncApexJob WHERE Id != NULL ORDER BY CreatedDate DESC LIMIT 100'
+        }
+      });
+      expect(result).toEqual(mockResponse.data.records);
     });
   });
 });
