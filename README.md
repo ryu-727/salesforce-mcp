@@ -50,9 +50,9 @@ npm run build
 
 Configure your Salesforce connection using environment variables:
 
-### SF CLI Authentication (Recommended)
+### SF CLI Authentication
 
-If you have the Salesforce CLI installed and authenticated, the MCP server can automatically use your existing authentication:
+The MCP server uses Salesforce CLI authentication. Make sure you have authenticated to your org using the Salesforce CLI:
 
 ```bash
 # Use default authenticated org
@@ -71,28 +71,6 @@ npm run dev
 - Install Salesforce CLI: https://developer.salesforce.com/tools/cli
 - Authenticate to your org: `sf org login web`
 - Verify authentication: `sf org list`
-
-### JWT Bearer Token Flow (Recommended for CI/CD)
-```bash
-export SF_INSTANCE_URL="https://your-domain.my.salesforce.com"
-export SF_CLIENT_ID="your_connected_app_client_id"
-export SF_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
-your_private_key_content
------END RSA PRIVATE KEY-----"
-export SF_SUBJECT="your_username@example.com"
-export SF_API_VERSION="59.0"
-```
-
-### Username/Password Flow
-```bash
-export SF_INSTANCE_URL="https://login.salesforce.com"
-export SF_CLIENT_ID="your_connected_app_client_id"
-export SF_CLIENT_SECRET="your_client_secret"
-export SF_USERNAME="your_username@example.com"
-export SF_PASSWORD="your_password"
-export SF_SECURITY_TOKEN="your_security_token"
-export SF_API_VERSION="59.0"
-```
 
 ## Usage
 
