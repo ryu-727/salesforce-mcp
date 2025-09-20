@@ -1,22 +1,18 @@
 import axios from 'axios';
 import { SalesforceRestClient } from '../rest-client';
 import { SalesforceAuth } from '../../auth/salesforce-auth';
-import { SalesforceToolingClient } from '../tooling-client';
 import { SalesforceConfig } from '../../types/index';
 
 jest.mock('axios');
 jest.mock('../../auth/salesforce-auth');
-jest.mock('../tooling-client');
 
 const mockedAxios = axios as jest.Mocked<typeof axios>;
 const MockedSalesforceAuth = SalesforceAuth as jest.MockedClass<typeof SalesforceAuth>;
-const MockedSalesforceToolingClient = SalesforceToolingClient as jest.MockedClass<typeof SalesforceToolingClient>;
 
 describe('SalesforceRestClient', () => {
   let client: SalesforceRestClient;
   let mockHttpClient: any;
   let mockAuth: jest.Mocked<SalesforceAuth>;
-  let mockToolingClient: jest.Mocked<SalesforceToolingClient>;
   let config: SalesforceConfig;
 
   beforeEach(() => {
@@ -47,12 +43,7 @@ describe('SalesforceRestClient', () => {
       getInstanceUrl: jest.fn().mockReturnValue('https://test.salesforce.com')
     } as any;
 
-    mockToolingClient = {
-      query: jest.fn()
-    } as any;
-
     MockedSalesforceAuth.mockImplementation(() => mockAuth);
-    MockedSalesforceToolingClient.mockImplementation(() => mockToolingClient);
     mockedAxios.create.mockReturnValue(mockHttpClient);
 
     client = new SalesforceRestClient(config);
@@ -62,7 +53,6 @@ describe('SalesforceRestClient', () => {
     it('should create a SalesforceRestClient instance', () => {
       expect(client).toBeInstanceOf(SalesforceRestClient);
       expect(MockedSalesforceAuth).toHaveBeenCalledWith(config);
-      expect(MockedSalesforceToolingClient).toHaveBeenCalledWith(config);
       expect(mockedAxios.create).toHaveBeenCalledWith({
         timeout: 30000,
         headers: {
@@ -208,17 +198,7 @@ describe('SalesforceRestClient', () => {
   });
 
   describe('query', () => {
-    it('should route tooling API queries to tooling client', async () => {
-      const mockResponse = { totalSize: 1, done: true, records: [{ Id: '123' }] };
-      mockToolingClient.query.mockResolvedValue(mockResponse);
-
-      const result = await client.query('SELECT Id FROM ApexClass');
-
-      expect(mockToolingClient.query).toHaveBeenCalledWith('SELECT Id FROM ApexClass');
-      expect(result).toEqual(mockResponse);
-    });
-
-    it('should route standard queries to REST API', async () => {
+    it('should execute query using REST API', async () => {
       const mockResponse = { data: { totalSize: 1, done: true, records: [{ Id: '123' }] } };
       mockHttpClient.mockResolvedValue(mockResponse);
 
@@ -230,16 +210,6 @@ describe('SalesforceRestClient', () => {
         params: { q: 'SELECT Id FROM Account' }
       });
       expect(result).toEqual(mockResponse.data);
-    });
-
-    it('should detect AsyncApexJob as tooling object', async () => {
-      const mockResponse = { totalSize: 1, done: true, records: [{ Id: '123' }] };
-      mockToolingClient.query.mockResolvedValue(mockResponse);
-
-      const result = await client.query('SELECT Id FROM AsyncApexJob');
-
-      expect(mockToolingClient.query).toHaveBeenCalledWith('SELECT Id FROM AsyncApexJob');
-      expect(result).toEqual(mockResponse);
     });
   });
 
@@ -337,80 +307,6 @@ describe('SalesforceRestClient', () => {
     });
   });
 
-  describe('getAsyncApexJobs', () => {
-    it('should get all async apex jobs', async () => {
-      const mockResponse = { totalSize: 1, done: true, records: [{ Id: 'job123' }] };
-      mockToolingClient.query.mockResolvedValue(mockResponse);
-
-      const result = await client.getAsyncApexJobs();
-
-      expect(mockToolingClient.query).toHaveBeenCalledWith(
-        'SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name FROM AsyncApexJob ORDER BY CreatedDate DESC LIMIT 100'
-      );
-      expect(result).toEqual(mockResponse.records);
-    });
-
-    it('should get async apex jobs with status filter', async () => {
-      const mockResponse = { totalSize: 1, done: true, records: [{ Id: 'job123' }] };
-      mockToolingClient.query.mockResolvedValue(mockResponse);
-
-      const result = await client.getAsyncApexJobs('Completed', 50);
-
-      expect(mockToolingClient.query).toHaveBeenCalledWith(
-        "SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name FROM AsyncApexJob WHERE Status = 'Completed' ORDER BY CreatedDate DESC LIMIT 50"
-      );
-      expect(result).toEqual(mockResponse.records);
-    });
-  });
-
-  describe('getAsyncApexJob', () => {
-    it('should get a specific async apex job', async () => {
-      const mockResponse = { totalSize: 1, done: true, records: [{ Id: 'job123', Status: 'Completed' }] };
-      mockToolingClient.query.mockResolvedValue(mockResponse);
-
-      const result = await client.getAsyncApexJob('job123');
-
-      expect(mockToolingClient.query).toHaveBeenCalledWith(
-        "SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name, ExtendedStatus FROM AsyncApexJob WHERE Id = 'job123'"
-      );
-      expect(result).toEqual(mockResponse.records[0]);
-    });
-  });
-
-  describe('searchAsyncApexJobs', () => {
-    it('should search async apex jobs with all filters', async () => {
-      const mockResponse = { totalSize: 1, done: true, records: [{ Id: 'job123' }] };
-      mockToolingClient.query.mockResolvedValue(mockResponse);
-
-      const searchParams = {
-        status: 'Completed',
-        jobType: 'BatchApex',
-        apexClassName: 'TestBatch',
-        createdDateFrom: '2023-01-01T00:00:00Z',
-        createdDateTo: '2023-12-31T23:59:59Z',
-        limit: 50
-      };
-
-      const result = await client.searchAsyncApexJobs(searchParams);
-
-      expect(mockToolingClient.query).toHaveBeenCalledWith(
-        "SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name, ApexClass.Name FROM AsyncApexJob WHERE Id != NULL AND Status = 'Completed' AND JobType = 'BatchApex' AND ApexClass.Name LIKE '%TestBatch%' AND CreatedDate >= 2023-01-01T00:00:00Z AND CreatedDate <= 2023-12-31T23:59:59Z ORDER BY CreatedDate DESC LIMIT 50"
-      );
-      expect(result).toEqual(mockResponse.records);
-    });
-
-    it('should search async apex jobs without filters', async () => {
-      const mockResponse = { totalSize: 1, done: true, records: [{ Id: 'job123' }] };
-      mockToolingClient.query.mockResolvedValue(mockResponse);
-
-      const result = await client.searchAsyncApexJobs({});
-
-      expect(mockToolingClient.query).toHaveBeenCalledWith(
-        'SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name, ApexClass.Name FROM AsyncApexJob WHERE Id != NULL ORDER BY CreatedDate DESC LIMIT 100'
-      );
-      expect(result).toEqual(mockResponse.records);
-    });
-  });
 
   describe('getAuth', () => {
     it('should get authentication info', async () => {
