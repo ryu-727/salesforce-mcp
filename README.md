@@ -84,66 +84,12 @@ npm run dev
 ./build/index.js
 ```
 
-### VS Code Configuration
-
-To use this MCP server with Claude for VS Code, create a `.vscode/mcp.json` file in your workspace:
-
-**Option 1: Using SF CLI Authentication (Recommended)**
-```json
-{
-  "mcpServers": {
-    "salesforce": {
-      "command": "node",
-      "args": ["/path/to/salesforce-mcp/build/index.js"],
-      "env": {
-        "SF_TARGET_ORG": "myorg"
-      }
-    }
-  }
-}
-```
-
-**Option 2: Using JWT Authentication**
-```json
-{
-  "mcpServers": {
-    "salesforce": {
-      "command": "node",
-      "args": ["/path/to/salesforce-mcp/build/index.js"],
-      "env": {
-        "SF_INSTANCE_URL": "https://your-domain.my.salesforce.com",
-        "SF_CLIENT_ID": "your_connected_app_client_id",
-        "SF_PRIVATE_KEY": "-----BEGIN RSA PRIVATE KEY-----\nyour_private_key_content\n-----END RSA PRIVATE KEY-----",
-        "SF_SUBJECT": "your_username@example.com",
-        "SF_API_VERSION": "59.0"
-      }
-    }
-  }
-}
-```
-
-Replace `/path/to/salesforce-mcp` with the actual path to your project directory.
-
 ### Claude Code CLI Configuration
 
-**Option 1: Using SF CLI Authentication (Recommended)**
 ```bash
 claude mcp add salesforce-mcp -s project \
   -e SF_TARGET_ORG=myorg \
-  -- /path/to/salesforce-mcp/build/index.js
-```
-
-**Option 2: Using JWT Authentication**
-```bash
-claude mcp add salesforce-mcp -s project \
-  -e SF_INSTANCE_URL=https://your-domain.my.salesforce.com \
-  -e SF_CLIENT_ID=your_connected_app_client_id \
-  -e SF_PRIVATE_KEY="-----BEGIN RSA PRIVATE KEY-----
-your_private_key_content
------END RSA PRIVATE KEY-----" \
-  -e SF_SUBJECT=your_username@example.com \
-  -e SF_API_VERSION=59.0 \
-  -- /path/to/salesforce-mcp/build/index.js
+  -- npx salesforce-mcp-server@latest
 ```
 
 ### Available Tools
@@ -236,7 +182,7 @@ src/
 
 - Node.js 18+
 - Valid Salesforce org with API access
-- Connected App configured for authentication
+- Salesforce CLI installed and authenticated
 
 ## License
 
