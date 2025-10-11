@@ -244,14 +244,6 @@ export class SalesforceToolingClient {
     return result.records[0];
   }
 
-  // Organization info (uses regular SOQL API, not Tooling API)
-  async getOrgInfo(): Promise<any> {
-    const soql = 'SELECT Id, Name, OrganizationType, InstanceName, IsSandbox FROM Organization LIMIT 1';
-    const url = `query?${new URLSearchParams({ q: soql }).toString()}`;
-    const response = await this.auth.restRequest(url);
-    return response.records[0];
-  }
-
   // AsyncApexJob methods
   async getAsyncApexJobs(statusFilter?: string, limit: number = 100): Promise<any[]> {
     let soql = 'SELECT Id, Status, JobType, MethodName, JobItemsProcessed, TotalJobItems, NumberOfErrors, CompletedDate, CreatedDate, CreatedBy.Name FROM AsyncApexJob';

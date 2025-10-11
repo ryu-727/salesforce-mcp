@@ -370,27 +370,6 @@ describe('SalesforceToolingClient', () => {
     });
   });
 
-  describe('getOrgInfo', () => {
-    it('should get organization info', async () => {
-      const mockResponse = {
-        records: [{
-          Id: '00D123456789012',
-          Name: 'Test Org',
-          OrganizationType: 'Developer Edition',
-          InstanceName: 'CS123',
-          IsSandbox: false
-        }]
-      };
-
-      mockAuth.restRequest.mockResolvedValue(mockResponse);
-
-      const result = await client.getOrgInfo();
-
-      expect(mockAuth.restRequest).toHaveBeenCalledWith('query?q=SELECT+Id%2C+Name%2C+OrganizationType%2C+InstanceName%2C+IsSandbox+FROM+Organization+LIMIT+1');
-      expect(result).toEqual(mockResponse.records[0]);
-    });
-  });
-
   describe('getAsyncApexJobs', () => {
     it('should get all async apex jobs', async () => {
       const mockResponse = {
