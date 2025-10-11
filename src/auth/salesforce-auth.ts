@@ -15,7 +15,7 @@ export class SalesforceAuth {
   }
 
   async getAccessToken(): Promise<string> {
-    const connection = await this.getConnection();
+    const connection = await this.getConnectionInternal();
     const accessToken = connection.accessToken;
     if (!accessToken) {
       throw new Error('No access token available');
@@ -30,7 +30,21 @@ export class SalesforceAuth {
     return this.config.instanceUrl;
   }
 
-  private async getConnection(): Promise<Connection> {
+  async getConnection(): Promise<Connection> {
+    return await this.getConnectionInternal();
+  }
+
+  async toolingRequest(url: string, options?: any): Promise<any> {
+    const connection = await this.getConnectionInternal();
+    return await connection.tooling.request(url, options);
+  }
+
+  async restRequest(url: string, options?: any): Promise<any> {
+    const connection = await this.getConnectionInternal();
+    return await connection.request(url, options);
+  }
+
+  private async getConnectionInternal(): Promise<Connection> {
     // Use AuthInfo-based authentication
     await this.authenticateWithAuthInfo();
 

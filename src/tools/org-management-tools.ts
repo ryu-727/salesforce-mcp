@@ -7,7 +7,7 @@ export function createOrgManagementTools(client: SalesforceToolingClient) {
       name: 'get_org_info',
       description: 'Get organization information',
       inputSchema: { type: 'object', properties: {} },
-      handler: async (args: any) => {
+      handler: async () => {
         try {
           // OrganizationオブジェクトはSOQL APIを使用する必要があるため、直接REST APIを呼び出し
           const orgInfo = await client.getOrgInfo();
