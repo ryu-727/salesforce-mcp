@@ -3,7 +3,6 @@ import { SalesforceConfig } from '../types/index.js';
 
 export class SalesforceAuth {
   private config: SalesforceConfig;
-  private connection?: Connection;
 
   constructor(config: SalesforceConfig) {
     this.config = config;
@@ -14,35 +13,17 @@ export class SalesforceAuth {
     return new SalesforceAuth(config);
   }
 
-  async getAccessToken(): Promise<string> {
+  async toolingRequest(url: string, options?: any): Promise<any> {
     const connection = await this.getConnection();
-    const accessToken = connection.accessToken;
-    if (!accessToken) {
-      throw new Error('No access token available');
-    }
-    return accessToken;
+    return await connection.tooling.request(url, options);
   }
 
-  getInstanceUrl(): string {
-    if (this.connection) {
-      return this.connection.instanceUrl;
-    }
-    return this.config.instanceUrl;
+  async restRequest(url: string, options?: any): Promise<any> {
+    const connection = await this.getConnection();
+    return await connection.request(url, options);
   }
 
   private async getConnection(): Promise<Connection> {
-    // Use AuthInfo-based authentication
-    await this.authenticateWithAuthInfo();
-
-    if (!this.connection) {
-      throw new Error('Failed to establish connection');
-    }
-
-    return this.connection;
-  }
-
-
-  private async authenticateWithAuthInfo(): Promise<void> {
     try {
       let targetAuthInfo: AuthInfo;
 
@@ -65,12 +46,13 @@ export class SalesforceAuth {
         targetAuthInfo = await AuthInfo.create();
       }
 
-      // Create connection using AuthInfo
-      this.connection = await Connection.create({ authInfo: targetAuthInfo });
+      // Create connection and return directly without caching
+      return await Connection.create({ authInfo: targetAuthInfo });
 
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       throw new Error(`Failed to authenticate with AuthInfo: ${message}`);
     }
   }
+
 }

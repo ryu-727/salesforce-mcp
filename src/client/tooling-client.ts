@@ -1,4 +1,3 @@
-import axios, { AxiosInstance } from 'axios';
 import { SalesforceAuth } from '../auth/salesforce-auth.js';
 import {
   SalesforceConfig,
@@ -12,103 +11,58 @@ import {
 
 export class SalesforceToolingClient {
   private auth: SalesforceAuth;
-  private httpClient: AxiosInstance;
 
   constructor(config: SalesforceConfig, sharedAuth?: SalesforceAuth) {
     this.auth = sharedAuth || new SalesforceAuth(config);
-
-    this.httpClient = axios.create({
-      timeout: 30000,
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-    });
-
-    this.setupInterceptors();
-  }
-
-  private setupInterceptors(): void {
-    this.httpClient.interceptors.request.use(async (config) => {
-      const token = await this.auth.getAccessToken();
-      const instanceUrl = this.auth.getInstanceUrl();
-
-      config.headers.Authorization = `Bearer ${token}`;
-
-      if (!config.url?.startsWith('http')) {
-        config.url = `${instanceUrl}/services/data/v59.0/tooling/${config.url}`;
-      }
-
-      return config;
-    });
-
-    this.httpClient.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (error.response?.status === 401) {
-          console.error(
-            'Authentication failed. Please check your credentials.'
-          );
-        }
-        if (error.response?.status === 400) {
-          console.error(
-            error.response.data?.message ||
-              'Bad Request. Please check your request parameters.'
-          );
-        }
-
-        return Promise.reject(error);
-      }
-    );
   }
 
   async query<T = any>(soql: string): Promise<ToolingApiResponse<T>> {
-    const response = await this.httpClient.get('query/', {
-      params: { q: soql },
-    });
-    return response.data;
+    const url = `/query/?${new URLSearchParams({ q: soql }).toString()}`;
+    return await this.auth.toolingRequest(url);
   }
 
   async queryMore<T = any>(
     nextRecordsUrl: string
   ): Promise<ToolingApiResponse<T>> {
-    const response = await this.httpClient.get(nextRecordsUrl);
-    return response.data;
+    // nextRecordsUrl is already a full URL, use it directly
+    return await this.auth.toolingRequest(nextRecordsUrl);
   }
 
   async describe(sobjectType: string): Promise<any> {
-    const response = await this.httpClient.get(
-      `sobjects/${sobjectType}/describe/`
-    );
-    return response.data;
+    return await this.auth.toolingRequest(`/sobjects/${sobjectType}/describe/`);
   }
 
   async create(
     sobjectType: string,
     data: any
   ): Promise<{ id: string; success: boolean; errors: any[] }> {
-    const response = await this.httpClient.post(
-      `sobjects/${sobjectType}/`,
-      data
-    );
-    return response.data;
+    return await this.auth.toolingRequest(`/sobjects/${sobjectType}/`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   async get(sobjectType: string, id: string, fields?: string[]): Promise<any> {
-    const params = fields ? { fields: fields.join(',') } : {};
-    const response = await this.httpClient.get(
-      `sobjects/${sobjectType}/${id}`,
-      { params }
-    );
-    return response.data;
+    let url = `/sobjects/${sobjectType}/${id}`;
+    if (fields) {
+      url += `?${new URLSearchParams({ fields: fields.join(',') }).toString()}`;
+    }
+    return await this.auth.toolingRequest(url);
   }
 
   async update(sobjectType: string, id: string, data: any): Promise<void> {
-    await this.httpClient.patch(`sobjects/${sobjectType}/${id}`, data);
+    await this.auth.toolingRequest(`/sobjects/${sobjectType}/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   async delete(sobjectType: string, id: string): Promise<void> {
-    await this.httpClient.delete(`sobjects/${sobjectType}/${id}`);
+    await this.auth.toolingRequest(`/sobjects/${sobjectType}/${id}`, {
+      method: 'DELETE'
+    });
   }
 
   // Apex Class specific methods
@@ -267,10 +221,7 @@ export class SalesforceToolingClient {
   }
 
   async getDebugLogBody(logId: string): Promise<string> {
-    const response = await this.httpClient.get(
-      `sobjects/ApexLog/${logId}/Body`
-    );
-    return response.data;
+    return await this.auth.toolingRequest(`sobjects/ApexLog/${logId}/Body`);
   }
 
   // Test execution methods
@@ -280,39 +231,17 @@ export class SalesforceToolingClient {
       maxFailedTests: 1,
     };
 
-    const response = await this.httpClient.post(
-      'runTestsAsynchronous/',
-      testBody
-    );
-    return response.data;
+    return await this.auth.toolingRequest('runTestsAsynchronous/', {
+      method: 'POST',
+      body: JSON.stringify(testBody),
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 
   async getTestResults(asyncApexJobId: string): Promise<any> {
     const soql = `SELECT Id, Status, JobItemsProcessed, TotalJobItems, NumberOfErrors FROM AsyncApexJob WHERE Id = '${asyncApexJobId}'`;
     const result = await this.query(soql);
     return result.records[0];
-  }
-
-  // Organization info (uses regular SOQL API, not Tooling API)
-  async getOrgInfo(): Promise<any> {
-    const token = await this.auth.getAccessToken();
-    const instanceUrl = this.auth.getInstanceUrl();
-    
-    const response = await axios.get(
-      `${instanceUrl}/services/data/v59.0/query`,
-      {
-        params: {
-          q: 'SELECT Id, Name, OrganizationType, InstanceName, IsSandbox FROM Organization LIMIT 1'
-        },
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        }
-      }
-    );
-    
-    return response.data.records[0];
   }
 
   // AsyncApexJob methods

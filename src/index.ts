@@ -73,7 +73,7 @@ class SalesforceMCPServer {
       ...createDeploymentTools(this.toolingClient),
       ...createSecurityTools(this.toolingClient),
       ...createPerformanceTools(this.toolingClient),
-      ...createOrgManagementTools(this.toolingClient),
+      ...createOrgManagementTools(this.restClient),
       ...createRestApiTools(this.restClient),
     ];
   }
