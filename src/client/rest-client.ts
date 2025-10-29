@@ -30,27 +30,26 @@ export class SalesforceRestClient {
       options.body = JSON.stringify(body);
       options.headers = { 'Content-Type': 'application/json' };
     }
-
     return await this.auth.restRequest(url, options);
   }
 
   // Specific REST API methods
   async getLimits(): Promise<any> {
-    return this.callApi('limits');
+    return this.callApi('/limits');
   }
 
   async getSObjects(): Promise<any> {
-    return this.callApi('sobjects');
+    return this.callApi('/sobjects');
   }
 
   async describeSObject(sobjectType: string): Promise<any> {
-    return this.callApi(`sobjects/${sobjectType}/describe`);
+    return this.callApi(`/sobjects/${sobjectType}/describe`);
   }
 
   async query(soql: string): Promise<any> {
     // Use standard REST API for all queries
     // Note: Tooling API objects should be queried via SalesforceToolingClient
-    return this.callApi('query', 'GET', null, { q: soql });
+    return this.callApi('/query', 'GET', null, { q: soql });
   }
 
   async queryMore(nextRecordsUrl: string): Promise<any> {
@@ -59,33 +58,20 @@ export class SalesforceRestClient {
   }
 
   async createRecord(sobjectType: string, data: any): Promise<any> {
-    return this.callApi(`sobjects/${sobjectType}`, 'POST', data);
+    return this.callApi(`/sobjects/${sobjectType}`, 'POST', data);
   }
 
   async getRecord(sobjectType: string, id: string, fields?: string[]): Promise<any> {
     const params = fields ? { fields: fields.join(',') } : {};
-    return this.callApi(`sobjects/${sobjectType}/${id}`, 'GET', null, params);
+    return this.callApi(`/sobjects/${sobjectType}/${id}`, 'GET', null, params);
   }
 
   async updateRecord(sobjectType: string, id: string, data: any): Promise<void> {
-    await this.callApi(`sobjects/${sobjectType}/${id}`, 'PATCH', data);
+    await this.callApi(`/sobjects/${sobjectType}/${id}`, 'PATCH', data);
   }
 
   async deleteRecord(sobjectType: string, id: string): Promise<void> {
-    await this.callApi(`sobjects/${sobjectType}/${id}`, 'DELETE');
+    await this.callApi(`/sobjects/${sobjectType}/${id}`, 'DELETE');
   }
 
-  // Get authentication info for direct use
-  async getAuth(): Promise<{ token: string; instanceUrl: string; apiVersion: string }> {
-    const token = await this.auth.getAccessToken();
-    const instanceUrl = this.auth.getInstanceUrl();
-    const apiVersion = '59.0';
-
-    return { token, instanceUrl, apiVersion };
-  }
-
-  // Get Connection for advanced usage
-  async getConnection() {
-    return await this.auth.getConnection();
-  }
 }

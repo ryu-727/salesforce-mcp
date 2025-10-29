@@ -23,8 +23,6 @@ describe('SalesforceToolingClient', () => {
     };
 
     mockAuth = {
-      getAccessToken: jest.fn().mockResolvedValue('fake-token'),
-      getInstanceUrl: jest.fn().mockReturnValue('https://test.salesforce.com'),
       toolingRequest: jest.fn().mockResolvedValue({}),
       restRequest: jest.fn().mockResolvedValue({})
     } as any;
@@ -60,7 +58,7 @@ describe('SalesforceToolingClient', () => {
 
       const result = await client.query('SELECT Id, Name FROM ApexClass');
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('query/?q=SELECT+Id%2C+Name+FROM+ApexClass');
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/query/?q=SELECT+Id%2C+Name+FROM+ApexClass');
       expect(result).toEqual(mockResponse);
     });
   });
@@ -93,7 +91,7 @@ describe('SalesforceToolingClient', () => {
 
       const result = await client.describe('ApexClass');
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('sobjects/ApexClass/describe/');
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/sobjects/ApexClass/describe/');
       expect(result).toEqual(mockResponse);
     });
   });
@@ -111,7 +109,7 @@ describe('SalesforceToolingClient', () => {
       const data = { Name: 'TestClass', Body: 'public class TestClass {}' };
       const result = await client.create('ApexClass', data);
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('sobjects/ApexClass/', {
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/sobjects/ApexClass/', {
         method: 'POST',
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' }
@@ -128,7 +126,7 @@ describe('SalesforceToolingClient', () => {
 
       const result = await client.get('ApexClass', '123');
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('sobjects/ApexClass/123');
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/sobjects/ApexClass/123');
       expect(result).toEqual(mockResponse);
     });
 
@@ -139,7 +137,7 @@ describe('SalesforceToolingClient', () => {
 
       const result = await client.get('ApexClass', '123', ['Id', 'Name']);
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('sobjects/ApexClass/123?fields=Id%2CName');
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/sobjects/ApexClass/123?fields=Id%2CName');
       expect(result).toEqual(mockResponse);
     });
   });
@@ -151,7 +149,7 @@ describe('SalesforceToolingClient', () => {
       const data = { Body: 'public class UpdatedTestClass {}' };
       await client.update('ApexClass', '123', data);
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('sobjects/ApexClass/123', {
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/sobjects/ApexClass/123', {
         method: 'PATCH',
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' }
@@ -165,7 +163,7 @@ describe('SalesforceToolingClient', () => {
 
       await client.delete('ApexClass', '123');
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('sobjects/ApexClass/123', {
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/sobjects/ApexClass/123', {
         method: 'DELETE'
       });
     });
@@ -184,7 +182,7 @@ describe('SalesforceToolingClient', () => {
 
       const result = await client.getApexClasses();
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('query/?q=SELECT+Id%2C+Name%2C+Body%2C+NamespacePrefix%2C+ApiVersion%2C+Status%2C+IsValid%2C+BodyCrc%2C+LengthWithoutComments%2C+LastModifiedDate%2C+CreatedDate+FROM+ApexClass+ORDER+BY+Name');
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/query/?q=SELECT+Id%2C+Name%2C+Body%2C+NamespacePrefix%2C+ApiVersion%2C+Status%2C+IsValid%2C+BodyCrc%2C+LengthWithoutComments%2C+LastModifiedDate%2C+CreatedDate+FROM+ApexClass+ORDER+BY+Name');
       expect(result).toEqual(mockResponse.records);
     });
 
@@ -199,7 +197,7 @@ describe('SalesforceToolingClient', () => {
 
       const result = await client.getApexClasses('Test');
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('query/?q=SELECT+Id%2C+Name%2C+Body%2C+NamespacePrefix%2C+ApiVersion%2C+Status%2C+IsValid%2C+BodyCrc%2C+LengthWithoutComments%2C+LastModifiedDate%2C+CreatedDate+FROM+ApexClass+WHERE+Name+LIKE+%27%25Test%25%27+ORDER+BY+Name');
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/query/?q=SELECT+Id%2C+Name%2C+Body%2C+NamespacePrefix%2C+ApiVersion%2C+Status%2C+IsValid%2C+BodyCrc%2C+LengthWithoutComments%2C+LastModifiedDate%2C+CreatedDate+FROM+ApexClass+WHERE+Name+LIKE+%27%25Test%25%27+ORDER+BY+Name');
       expect(result).toEqual(mockResponse.records);
     });
   });
@@ -212,7 +210,7 @@ describe('SalesforceToolingClient', () => {
 
       const result = await client.getApexClass('123');
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('sobjects/ApexClass/123');
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/sobjects/ApexClass/123');
       expect(result).toEqual(mockResponse);
     });
   });
@@ -229,7 +227,7 @@ describe('SalesforceToolingClient', () => {
 
       const result = await client.createApexClass('TestClass', 'public class TestClass {}');
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('sobjects/ApexClass/', {
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/sobjects/ApexClass/', {
         method: 'POST',
         body: JSON.stringify({
           Name: 'TestClass',
@@ -247,7 +245,7 @@ describe('SalesforceToolingClient', () => {
 
       await client.updateApexClass('123', 'public class UpdatedTestClass {}');
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('sobjects/ApexClass/123', {
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/sobjects/ApexClass/123', {
         method: 'PATCH',
         body: JSON.stringify({ Body: 'public class UpdatedTestClass {}' }),
         headers: { 'Content-Type': 'application/json' }
@@ -261,7 +259,7 @@ describe('SalesforceToolingClient', () => {
 
       await client.deleteApexClass('123');
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('sobjects/ApexClass/123', {
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/sobjects/ApexClass/123', {
         method: 'DELETE'
       });
     });
@@ -285,7 +283,7 @@ describe('SalesforceToolingClient', () => {
 
       const result = await client.getCodeCoverage();
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('query/?q=SELECT+ApexClassOrTriggerId%2C+ApexClassOrTrigger.Name%2C+NumLinesCovered%2C+NumLinesUncovered%2C+Coverage+FROM+ApexCodeCoverageAggregate');
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/query/?q=SELECT+ApexClassOrTriggerId%2C+ApexClassOrTrigger.Name%2C+NumLinesCovered%2C+NumLinesUncovered%2C+Coverage+FROM+ApexCodeCoverageAggregate');
       expect(result).toEqual(mockResponse.records);
     });
 
@@ -306,7 +304,7 @@ describe('SalesforceToolingClient', () => {
 
       const result = await client.getCodeCoverage('123');
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('query/?q=SELECT+ApexClassOrTriggerId%2C+ApexClassOrTrigger.Name%2C+NumLinesCovered%2C+NumLinesUncovered%2C+Coverage+FROM+ApexCodeCoverageAggregate+WHERE+ApexClassOrTriggerId+%3D+%27123%27');
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/query/?q=SELECT+ApexClassOrTriggerId%2C+ApexClassOrTrigger.Name%2C+NumLinesCovered%2C+NumLinesUncovered%2C+Coverage+FROM+ApexCodeCoverageAggregate+WHERE+ApexClassOrTriggerId+%3D+%27123%27');
       expect(result).toEqual(mockResponse.records);
     });
   });
@@ -365,7 +363,7 @@ describe('SalesforceToolingClient', () => {
 
       const result = await client.getTestResults('job123');
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('query/?q=SELECT+Id%2C+Status%2C+JobItemsProcessed%2C+TotalJobItems%2C+NumberOfErrors+FROM+AsyncApexJob+WHERE+Id+%3D+%27job123%27');
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/query/?q=SELECT+Id%2C+Status%2C+JobItemsProcessed%2C+TotalJobItems%2C+NumberOfErrors+FROM+AsyncApexJob+WHERE+Id+%3D+%27job123%27');
       expect(result).toEqual(mockResponse.records[0]);
     });
   });
@@ -380,7 +378,7 @@ describe('SalesforceToolingClient', () => {
 
       const result = await client.getAsyncApexJobs();
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('query/?q=SELECT+Id%2C+Status%2C+JobType%2C+MethodName%2C+JobItemsProcessed%2C+TotalJobItems%2C+NumberOfErrors%2C+CompletedDate%2C+CreatedDate%2C+CreatedBy.Name+FROM+AsyncApexJob+ORDER+BY+CreatedDate+DESC+LIMIT+100');
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/query/?q=SELECT+Id%2C+Status%2C+JobType%2C+MethodName%2C+JobItemsProcessed%2C+TotalJobItems%2C+NumberOfErrors%2C+CompletedDate%2C+CreatedDate%2C+CreatedBy.Name+FROM+AsyncApexJob+ORDER+BY+CreatedDate+DESC+LIMIT+100');
       expect(result).toEqual(mockResponse.records);
     });
 
@@ -393,7 +391,7 @@ describe('SalesforceToolingClient', () => {
 
       const result = await client.getAsyncApexJobs('Completed', 50);
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('query/?q=SELECT+Id%2C+Status%2C+JobType%2C+MethodName%2C+JobItemsProcessed%2C+TotalJobItems%2C+NumberOfErrors%2C+CompletedDate%2C+CreatedDate%2C+CreatedBy.Name+FROM+AsyncApexJob+WHERE+Status+%3D+%27Completed%27+ORDER+BY+CreatedDate+DESC+LIMIT+50');
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/query/?q=SELECT+Id%2C+Status%2C+JobType%2C+MethodName%2C+JobItemsProcessed%2C+TotalJobItems%2C+NumberOfErrors%2C+CompletedDate%2C+CreatedDate%2C+CreatedBy.Name+FROM+AsyncApexJob+WHERE+Status+%3D+%27Completed%27+ORDER+BY+CreatedDate+DESC+LIMIT+50');
       expect(result).toEqual(mockResponse.records);
     });
   });
@@ -408,7 +406,7 @@ describe('SalesforceToolingClient', () => {
 
       const result = await client.getAsyncApexJob('job123');
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('query/?q=SELECT+Id%2C+Status%2C+JobType%2C+MethodName%2C+JobItemsProcessed%2C+TotalJobItems%2C+NumberOfErrors%2C+CompletedDate%2C+CreatedDate%2C+CreatedBy.Name%2C+ExtendedStatus+FROM+AsyncApexJob+WHERE+Id+%3D+%27job123%27');
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/query/?q=SELECT+Id%2C+Status%2C+JobType%2C+MethodName%2C+JobItemsProcessed%2C+TotalJobItems%2C+NumberOfErrors%2C+CompletedDate%2C+CreatedDate%2C+CreatedBy.Name%2C+ExtendedStatus+FROM+AsyncApexJob+WHERE+Id+%3D+%27job123%27');
       expect(result).toEqual(mockResponse.records[0]);
     });
   });
@@ -432,7 +430,7 @@ describe('SalesforceToolingClient', () => {
 
       const result = await client.searchAsyncApexJobs(searchParams);
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('query/?q=SELECT+Id%2C+Status%2C+JobType%2C+MethodName%2C+JobItemsProcessed%2C+TotalJobItems%2C+NumberOfErrors%2C+CompletedDate%2C+CreatedDate%2C+CreatedBy.Name%2C+ApexClass.Name+FROM+AsyncApexJob+WHERE+Id+%21%3D+NULL+AND+Status+%3D+%27Completed%27+AND+JobType+%3D+%27BatchApex%27+AND+ApexClass.Name+LIKE+%27%25TestBatch%25%27+AND+CreatedDate+%3E%3D+2023-01-01T00%3A00%3A00Z+AND+CreatedDate+%3C%3D+2023-12-31T23%3A59%3A59Z+ORDER+BY+CreatedDate+DESC+LIMIT+50');
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/query/?q=SELECT+Id%2C+Status%2C+JobType%2C+MethodName%2C+JobItemsProcessed%2C+TotalJobItems%2C+NumberOfErrors%2C+CompletedDate%2C+CreatedDate%2C+CreatedBy.Name%2C+ApexClass.Name+FROM+AsyncApexJob+WHERE+Id+%21%3D+NULL+AND+Status+%3D+%27Completed%27+AND+JobType+%3D+%27BatchApex%27+AND+ApexClass.Name+LIKE+%27%25TestBatch%25%27+AND+CreatedDate+%3E%3D+2023-01-01T00%3A00%3A00Z+AND+CreatedDate+%3C%3D+2023-12-31T23%3A59%3A59Z+ORDER+BY+CreatedDate+DESC+LIMIT+50');
       expect(result).toEqual(mockResponse.records);
     });
 
@@ -445,7 +443,7 @@ describe('SalesforceToolingClient', () => {
 
       const result = await client.searchAsyncApexJobs({});
 
-      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('query/?q=SELECT+Id%2C+Status%2C+JobType%2C+MethodName%2C+JobItemsProcessed%2C+TotalJobItems%2C+NumberOfErrors%2C+CompletedDate%2C+CreatedDate%2C+CreatedBy.Name%2C+ApexClass.Name+FROM+AsyncApexJob+WHERE+Id+%21%3D+NULL+ORDER+BY+CreatedDate+DESC+LIMIT+100');
+      expect(mockAuth.toolingRequest).toHaveBeenCalledWith('/query/?q=SELECT+Id%2C+Status%2C+JobType%2C+MethodName%2C+JobItemsProcessed%2C+TotalJobItems%2C+NumberOfErrors%2C+CompletedDate%2C+CreatedDate%2C+CreatedBy.Name%2C+ApexClass.Name+FROM+AsyncApexJob+WHERE+Id+%21%3D+NULL+ORDER+BY+CreatedDate+DESC+LIMIT+100');
       expect(result).toEqual(mockResponse.records);
     });
   });

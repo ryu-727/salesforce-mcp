@@ -17,7 +17,7 @@ export class SalesforceToolingClient {
   }
 
   async query<T = any>(soql: string): Promise<ToolingApiResponse<T>> {
-    const url = `query/?${new URLSearchParams({ q: soql }).toString()}`;
+    const url = `/query/?${new URLSearchParams({ q: soql }).toString()}`;
     return await this.auth.toolingRequest(url);
   }
 
@@ -29,14 +29,14 @@ export class SalesforceToolingClient {
   }
 
   async describe(sobjectType: string): Promise<any> {
-    return await this.auth.toolingRequest(`sobjects/${sobjectType}/describe/`);
+    return await this.auth.toolingRequest(`/sobjects/${sobjectType}/describe/`);
   }
 
   async create(
     sobjectType: string,
     data: any
   ): Promise<{ id: string; success: boolean; errors: any[] }> {
-    return await this.auth.toolingRequest(`sobjects/${sobjectType}/`, {
+    return await this.auth.toolingRequest(`/sobjects/${sobjectType}/`, {
       method: 'POST',
       body: JSON.stringify(data),
       headers: { 'Content-Type': 'application/json' }
@@ -44,7 +44,7 @@ export class SalesforceToolingClient {
   }
 
   async get(sobjectType: string, id: string, fields?: string[]): Promise<any> {
-    let url = `sobjects/${sobjectType}/${id}`;
+    let url = `/sobjects/${sobjectType}/${id}`;
     if (fields) {
       url += `?${new URLSearchParams({ fields: fields.join(',') }).toString()}`;
     }
@@ -52,7 +52,7 @@ export class SalesforceToolingClient {
   }
 
   async update(sobjectType: string, id: string, data: any): Promise<void> {
-    await this.auth.toolingRequest(`sobjects/${sobjectType}/${id}`, {
+    await this.auth.toolingRequest(`/sobjects/${sobjectType}/${id}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
       headers: { 'Content-Type': 'application/json' }
@@ -60,7 +60,7 @@ export class SalesforceToolingClient {
   }
 
   async delete(sobjectType: string, id: string): Promise<void> {
-    await this.auth.toolingRequest(`sobjects/${sobjectType}/${id}`, {
+    await this.auth.toolingRequest(`/sobjects/${sobjectType}/${id}`, {
       method: 'DELETE'
     });
   }

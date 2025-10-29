@@ -23,8 +23,6 @@ describe('SalesforceRestClient', () => {
     };
 
     mockAuth = {
-      getAccessToken: jest.fn().mockResolvedValue('fake-token'),
-      getInstanceUrl: jest.fn().mockReturnValue('https://test.salesforce.com'),
       restRequest: jest.fn().mockResolvedValue({}),
       getConnection: jest.fn().mockResolvedValue({})
     } as any;
@@ -115,7 +113,7 @@ describe('SalesforceRestClient', () => {
 
       const result = await client.getLimits();
 
-      expect(mockAuth.restRequest).toHaveBeenCalledWith('limits', { method: 'GET' });
+      expect(mockAuth.restRequest).toHaveBeenCalledWith('/limits', { method: 'GET' });
       expect(result).toEqual(mockResponse);
     });
   });
@@ -127,7 +125,7 @@ describe('SalesforceRestClient', () => {
 
       const result = await client.getSObjects();
 
-      expect(mockAuth.restRequest).toHaveBeenCalledWith('sobjects', { method: 'GET' });
+      expect(mockAuth.restRequest).toHaveBeenCalledWith('/sobjects', { method: 'GET' });
       expect(result).toEqual(mockResponse);
     });
   });
@@ -139,7 +137,7 @@ describe('SalesforceRestClient', () => {
 
       const result = await client.describeSObject('Account');
 
-      expect(mockAuth.restRequest).toHaveBeenCalledWith('sobjects/Account/describe', { method: 'GET' });
+      expect(mockAuth.restRequest).toHaveBeenCalledWith('/sobjects/Account/describe', { method: 'GET' });
       expect(result).toEqual(mockResponse);
     });
   });
@@ -151,7 +149,7 @@ describe('SalesforceRestClient', () => {
 
       const result = await client.query('SELECT Id FROM Account');
 
-      expect(mockAuth.restRequest).toHaveBeenCalledWith('query?q=SELECT+Id+FROM+Account', { method: 'GET' });
+      expect(mockAuth.restRequest).toHaveBeenCalledWith('/query?q=SELECT+Id+FROM+Account', { method: 'GET' });
       expect(result).toEqual(mockResponse);
     });
   });
@@ -177,7 +175,7 @@ describe('SalesforceRestClient', () => {
 
       const result = await client.createRecord('Account', recordData);
 
-      expect(mockAuth.restRequest).toHaveBeenCalledWith('sobjects/Account', {
+      expect(mockAuth.restRequest).toHaveBeenCalledWith('/sobjects/Account', {
         method: 'POST',
         body: JSON.stringify(recordData),
         headers: { 'Content-Type': 'application/json' }
@@ -193,7 +191,7 @@ describe('SalesforceRestClient', () => {
 
       const result = await client.getRecord('Account', '123');
 
-      expect(mockAuth.restRequest).toHaveBeenCalledWith('sobjects/Account/123', { method: 'GET' });
+      expect(mockAuth.restRequest).toHaveBeenCalledWith('/sobjects/Account/123', { method: 'GET' });
       expect(result).toEqual(mockResponse);
     });
 
@@ -203,7 +201,7 @@ describe('SalesforceRestClient', () => {
 
       const result = await client.getRecord('Account', '123', ['Id', 'Name']);
 
-      expect(mockAuth.restRequest).toHaveBeenCalledWith('sobjects/Account/123?fields=Id%2CName', { method: 'GET' });
+      expect(mockAuth.restRequest).toHaveBeenCalledWith('/sobjects/Account/123?fields=Id%2CName', { method: 'GET' });
       expect(result).toEqual(mockResponse);
     });
   });
@@ -217,7 +215,7 @@ describe('SalesforceRestClient', () => {
 
       await client.updateRecord('Account', '123', updateData);
 
-      expect(mockAuth.restRequest).toHaveBeenCalledWith('sobjects/Account/123', {
+      expect(mockAuth.restRequest).toHaveBeenCalledWith('/sobjects/Account/123', {
         method: 'PATCH',
         body: JSON.stringify(updateData),
         headers: { 'Content-Type': 'application/json' }
@@ -232,37 +230,7 @@ describe('SalesforceRestClient', () => {
 
       await client.deleteRecord('Account', '123');
 
-      expect(mockAuth.restRequest).toHaveBeenCalledWith('sobjects/Account/123', { method: 'DELETE' });
-    });
-  });
-
-
-  describe('getAuth', () => {
-    it('should get authentication info', async () => {
-      mockAuth.getAccessToken.mockResolvedValue('test-token');
-      mockAuth.getInstanceUrl.mockReturnValue('https://test.salesforce.com');
-
-      const result = await client.getAuth();
-
-      expect(mockAuth.getAccessToken).toHaveBeenCalled();
-      expect(mockAuth.getInstanceUrl).toHaveBeenCalled();
-      expect(result).toEqual({
-        token: 'test-token',
-        instanceUrl: 'https://test.salesforce.com',
-        apiVersion: '59.0'
-      });
-    });
-  });
-
-  describe('getConnection', () => {
-    it('should get connection instance', async () => {
-      const mockConnection = { instanceUrl: 'https://test.salesforce.com' } as any;
-      mockAuth.getConnection.mockResolvedValue(mockConnection);
-
-      const result = await client.getConnection();
-
-      expect(mockAuth.getConnection).toHaveBeenCalled();
-      expect(result).toEqual(mockConnection);
+      expect(mockAuth.restRequest).toHaveBeenCalledWith('/sobjects/Account/123', { method: 'DELETE' });
     });
   });
 });
